@@ -6,6 +6,7 @@ use App\Listeners\CreatePersonalTeam;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 it('exposes a Team owner relation', function (): void {
     $owner = User::factory()->create();
@@ -27,8 +28,8 @@ it('exposes a User currentTeam relation', function (): void {
 it('skips personal team creation when the registered authenticatable is not a User', function (): void {
     $listener = new CreatePersonalTeam();
 
-    /** @var Illuminate\Contracts\Auth\Authenticatable $impostor */
-    $impostor = new class implements Illuminate\Contracts\Auth\Authenticatable
+    /** @var Authenticatable $impostor */
+    $impostor = new class implements Authenticatable
     {
         public function getAuthIdentifierName(): string
         {
