@@ -1,14 +1,14 @@
-# rcrosbourne/laravel-starter-kit
+# rcrosbourne/laravel-react-starter-kit
 
-[![tests](https://github.com/rcrosbourne/laravel-starter-kit/actions/workflows/tests.yml/badge.svg)](https://github.com/rcrosbourne/laravel-starter-kit/actions/workflows/tests.yml)
-[![license](https://img.shields.io/github/license/rcrosbourne/laravel-starter-kit)](LICENSE)
+[![tests](https://github.com/rcrosbourne/laravel-react-starter-kit/actions/workflows/tests.yml/badge.svg)](https://github.com/rcrosbourne/laravel-react-starter-kit/actions/workflows/tests.yml)
+[![license](https://img.shields.io/github/license/rcrosbourne/laravel-react-starter-kit)](LICENSE)
 
 An opinionated Laravel 13 + React starter kit for Herd. Bun, Postgres, optional teams, 100% test coverage.
 
 ## Install
 
 ```bash
-composer create-project rcrosbourne/laravel-starter-kit my-app
+composer create-project rcrosbourne/laravel-react-starter-kit my-app
 ```
 
 The post-install hook runs `php artisan app:setup`, which prompts for teams support and configures `.env` to match your project directory.

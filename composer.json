@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "rcrosbourne/laravel-starter-kit",
+    "name": "rcrosbourne/laravel-react-starter-kit",
     "type": "project",
     "description": "An opinionated Laravel 13 + React starter kit for Herd. Bun, Postgres, optional teams, 100% test coverage.",
     "keywords": [
