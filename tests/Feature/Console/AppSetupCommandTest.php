@@ -47,6 +47,7 @@ final class AppSetupCommandTest extends TestCase
     {
         $files = Mockery::mock(Filesystem::class);
         $files->shouldReceive('isDirectory')->with(base_path('stubs'))->andReturn(true, true);
+        $files->shouldReceive('isDirectory')->with(base_path('stubs/teams'))->andReturn(false);
         $files->shouldReceive('exists')->with(base_path('.env'))->andReturn(true);
         $files->shouldReceive('get')->with(base_path('.env'))
             ->andReturn("APP_NAME=Laravel\nAPP_URL=http://localhost\nDB_DATABASE=laravel\n");

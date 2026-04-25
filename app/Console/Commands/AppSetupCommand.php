@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Setup\EnvMutator;
 use App\Setup\ShellRunner;
+use App\Setup\TeamsInstaller;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 
@@ -35,7 +36,7 @@ final class AppSetupCommand extends Command
         $teams = $this->resolveTeamsChoice();
 
         if ($teams) {
-            $this->copyTeamsStubs();
+            $this->copyTeamsStubs($files);
         }
 
         if ($files->isDirectory($stubsPath)) {
@@ -87,9 +88,9 @@ final class AppSetupCommand extends Command
         $files->put($envPath, EnvMutator::mutate($contents, $project));
     }
 
-    private function copyTeamsStubs(): void
+    private function copyTeamsStubs(Filesystem $files): void
     {
-        // Implemented in Phase 8.
+        (new TeamsInstaller($files, base_path()))->install(base_path('stubs/teams'));
     }
 
     private function printNextSteps(bool $teams): void
