@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('removes a member from a team', function (): void {
     $owner = User::factory()->create();
     $member = User::factory()->create();
-    $team = Team::create(['name' => 'Team', 'owner_id' => $owner->id]);
+    $team = Team::query()->create(['name' => 'Team', 'owner_id' => $owner->id]);
     $team->users()->attach($member->id, ['role' => 'member']);
 
     $this->actingAs($owner)->delete("/teams/{$team->id}/members/{$member->id}");
@@ -22,7 +19,7 @@ it('removes a member from a team', function (): void {
 it('refuses member removal for non-owner', function (): void {
     $owner = User::factory()->create();
     $member = User::factory()->create();
-    $team = Team::create(['name' => 'Team', 'owner_id' => $owner->id]);
+    $team = Team::query()->create(['name' => 'Team', 'owner_id' => $owner->id]);
     $team->users()->attach($member->id, ['role' => 'member']);
 
     $this->actingAs($member)

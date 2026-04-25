@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -16,14 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
+#[Fillable(['team_id', 'email', 'role'])]
 final class TeamInvitation extends Model
 {
-    /** @use HasFactory<\Database\Factories\TeamInvitationFactory> */
-    use HasFactory;
-
-    /** @var list<string> */
-    protected $fillable = ['team_id', 'email', 'role'];
-
     /**
      * @return BelongsTo<Team, $this>
      */

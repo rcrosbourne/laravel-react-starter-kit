@@ -55,20 +55,34 @@ final readonly class TeamsInstaller
         }
 
         $teamsContent = $this->files->get($teamsRoutesFile);
+        $webContent = $this->files->get($webRoutesFile);
 
-        preg_match_all('/^use\s+[^;]+;\s*$/m', $teamsContent, $useMatches);
-        $teamsUses = implode("\n", $useMatches[0]);
+        // Extract the FQCN inside each `use ...;` statement from both files so
+        // we can splice only NEW imports into web.php and avoid duplicate-use
+        // PHP fatal errors when the teams fragment already shares an import
+        // (e.g. Illuminate\Support\Facades\Route).
+        preg_match_all('/^use\s+([^;]+);\s*$/m', $teamsContent, $teamsUseMatches);
+        preg_match_all('/^use\s+([^;]+);\s*$/m', $webContent, $existingUseMatches);
+
+        $existingUses = array_map(mb_trim(...), $existingUseMatches[1]);
+        $newUses = array_values(array_filter(
+            array_map(mb_trim(...), $teamsUseMatches[1]),
+            fn (string $fqcn): bool => ! in_array($fqcn, $existingUses, true),
+        ));
+
+        $useSnippet = implode("\n", array_map(
+            fn (string $fqcn): string => sprintf('use %s;', $fqcn),
+            $newUses,
+        ));
 
         $teamsRoutes = (string) preg_replace('/^<\?php\s*/', '', $teamsContent);
         $teamsRoutes = (string) preg_replace('/^declare\(strict_types=1\);\s*/m', '', $teamsRoutes);
         $teamsRoutes = (string) preg_replace('/^use\s+[^;]+;\s*$/m', '', $teamsRoutes);
 
-        $webContent = $this->files->get($webRoutesFile);
-
-        if ($teamsUses !== '') {
+        if ($useSnippet !== '') {
             $webContent = (string) preg_replace(
                 '/((?:^use\s+[^;]+;\s*$\n?)+)/m',
-                sprintf('$1%s%s', $teamsUses, PHP_EOL),
+                sprintf('$1%s%s', $useSnippet, PHP_EOL),
                 $webContent,
                 1,
             );

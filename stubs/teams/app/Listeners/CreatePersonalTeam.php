@@ -18,7 +18,7 @@ final class CreatePersonalTeam
             return;
         }
 
-        $team = Team::create([
+        $team = Team::query()->create([
             'name' => "{$user->name}'s Team",
             'owner_id' => $user->id,
             'personal_team' => true,

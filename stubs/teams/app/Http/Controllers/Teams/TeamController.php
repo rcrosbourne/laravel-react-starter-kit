@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Teams;
 
 use App\Http\Controllers\Controller;
 use App\Models\Team;
+use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,6 +18,8 @@ use function assert;
 
 final class TeamController extends Controller
 {
+    use AuthorizesRequests;
+
     public function show(Team $team): Response
     {
         $this->authorize('view', $team);
@@ -50,7 +54,7 @@ final class TeamController extends Controller
     {
         $user = $request->user();
 
-        assert($user instanceof \App\Models\User);
+        assert($user instanceof User);
 
         abort_unless($user->switchTeam($team), 403);
 

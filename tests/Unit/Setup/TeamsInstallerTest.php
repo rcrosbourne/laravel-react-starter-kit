@@ -121,6 +121,52 @@ final class TeamsInstallerTest extends TestCase
         $this->assertFileDoesNotExist($this->base.'/routes/web.php');
     }
 
+    public function test_splice_dedupes_use_statements_already_present_in_web_php(): void
+    {
+        $this->files->makeDirectory($this->stubs.'/routes', 0755, true);
+        $this->files->put(
+            $this->stubs.'/routes/web.teams.php',
+            <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            use App\Http\Controllers\Teams\TeamController;
+            use Illuminate\Support\Facades\Route;
+
+            Route::get('/teams/{team}', [TeamController::class, 'show'])->name('teams.show');
+            PHP,
+        );
+
+        $this->files->makeDirectory($this->base.'/routes', 0755, true);
+        $this->files->put(
+            $this->base.'/routes/web.php',
+            <<<'PHP'
+            <?php
+
+            declare(strict_types=1);
+
+            use Illuminate\Support\Facades\Route;
+
+            Route::get('/', fn () => 'home')->name('home');
+            PHP,
+        );
+
+        (new TeamsInstaller($this->files, $this->base))->install($this->stubs);
+
+        $web = $this->files->get($this->base.'/routes/web.php');
+
+        // Illuminate\Support\Facades\Route should appear EXACTLY once, even
+        // though both files import it. Otherwise PHP throws "Cannot use ...
+        // because the name is already in use".
+        $this->assertSame(
+            1,
+            mb_substr_count($web, 'use Illuminate\\Support\\Facades\\Route;'),
+        );
+        // The new TeamController import was spliced in.
+        $this->assertStringContainsString('use App\\Http\\Controllers\\Teams\\TeamController;', $web);
+    }
+
     public function test_splice_handles_teams_routes_with_no_use_statements(): void
     {
         $this->files->makeDirectory($this->stubs.'/routes', 0755, true);
