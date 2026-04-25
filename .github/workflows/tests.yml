@@ -3,54 +3,152 @@ name: tests
 on:
   push:
     branches:
-      - develop
       - main
-      - master
-      - workos
   pull_request:
     branches:
-      - develop
       - main
-      - master
-      - workos
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     strategy:
+      fail-fast: false
       matrix:
-        php-version: ['8.3', '8.4', '8.5']
+        teams: [false, true]
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: laravel
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: '8.5'
           tools: composer:v2
           coverage: xdebug
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
 
-      - name: Install Node Dependencies
-        run: npm i
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
 
-      - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Cache Bun Dependencies
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
 
       - name: Copy Environment File
         run: cp .env.example .env
 
+      - name: Override DB credentials for CI
+        run: |
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=postgres/' .env
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=postgres/' .env
+
       - name: Generate Application Key
         run: php artisan key:generate
 
-      - name: Build Assets
-        run: npm run build
+      - name: Create Test Database
+        env:
+          PGPASSWORD: postgres
+        run: |
+          DB_NAME=$(grep '^DB_DATABASE=' .env | cut -d= -f2)
+          psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE \"${DB_NAME}_test\";"
+
+      - name: Run Setup
+        run: |
+          if [ "${{ matrix.teams }}" = "true" ]; then
+            php artisan app:setup --teams
+          else
+            php artisan app:setup --no-teams
+          fi
+
+      - name: Re-create Test Database after Setup (DB name may have changed)
+        env:
+          PGPASSWORD: postgres
+        run: |
+          DB_NAME=$(grep '^DB_DATABASE=' .env | cut -d= -f2)
+          psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE \"${DB_NAME}\";" 2>/dev/null || true
+          psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE \"${DB_NAME}_test\";" 2>/dev/null || true
+
+      - name: Get Playwright Version
+        id: playwright-version
+        run: echo "version=$(bun pm ls 2>/dev/null | grep playwright | head -1 | sed 's/.*@//' || echo 'unknown')" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install --with-deps
+
+      - name: Install Playwright System Dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps
+
+      - name: Cache Rector
+        uses: actions/cache@v4
+        with:
+          path: /tmp/rector
+          key: ${{ runner.os }}-rector-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-rector-
+
+      - name: Cache PHPStan
+        uses: actions/cache@v4
+        with:
+          path: /tmp/phpstan
+          key: ${{ runner.os }}-phpstan-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-phpstan-
+
+      - name: Create Cache Directories
+        run: mkdir -p /tmp/rector /tmp/phpstan
 
       - name: Tests
-        run: ./vendor/bin/phpunit
+        run: composer test
+
+      - name: Store Browser Screenshots on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-screenshots-${{ matrix.teams }}
+          path: tests/Browser/Screenshots
