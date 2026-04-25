@@ -31,8 +31,8 @@ final class TeamInvitationController extends Controller
 
         /** @var array{email: string, role: string} $validated */
         $validated = $request->validate([
-            'email' => 'required|email',
-            'role' => 'required|in:owner,member',
+            'email' => ['required', 'email'],
+            'role' => ['required', 'in:owner,member'],
         ]);
 
         $invitation = $team->invitations()->create($validated);
@@ -73,6 +73,6 @@ final class TeamInvitationController extends Controller
 
         $user->switchTeam($team);
 
-        return redirect()->route('dashboard');
+        return to_route('dashboard');
     }
 }

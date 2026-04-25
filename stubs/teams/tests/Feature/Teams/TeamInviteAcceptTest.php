@@ -51,6 +51,6 @@ it('rejects invitation accept with invalid signature', function (): void {
         'role' => 'member',
     ]);
 
-    $this->get("/team-invitations/{$invitation->id}/accept")
+    $this->get(sprintf('/team-invitations/%d/accept', $invitation->id))
         ->assertForbidden();
 });

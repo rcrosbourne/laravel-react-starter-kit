@@ -12,7 +12,7 @@ it('switches the current team when the user is a member', function (): void {
 
     $user->forceFill(['current_team_id' => $teamA->id])->save();
 
-    $this->actingAs($user)->post("/teams/{$teamB->id}/switch");
+    $this->actingAs($user)->post(sprintf('/teams/%d/switch', $teamB->id));
 
     expect($user->fresh()->current_team_id)->toBe($teamB->id);
 });
@@ -23,6 +23,6 @@ it('rejects switching to a team the user does not belong to', function (): void 
     $foreignTeam = Team::query()->create(['name' => 'Foreign', 'owner_id' => $other->id]);
 
     $this->actingAs($user)
-        ->post("/teams/{$foreignTeam->id}/switch")
+        ->post(sprintf('/teams/%d/switch', $foreignTeam->id))
         ->assertForbidden();
 });

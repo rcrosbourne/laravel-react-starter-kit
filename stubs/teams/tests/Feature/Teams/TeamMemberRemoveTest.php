@@ -11,7 +11,7 @@ it('removes a member from a team', function (): void {
     $team = Team::query()->create(['name' => 'Team', 'owner_id' => $owner->id]);
     $team->users()->attach($member->id, ['role' => 'member']);
 
-    $this->actingAs($owner)->delete("/teams/{$team->id}/members/{$member->id}");
+    $this->actingAs($owner)->delete(sprintf('/teams/%d/members/%s', $team->id, $member->id));
 
     expect($team->users()->where('user_id', $member->id)->exists())->toBeFalse();
 });
@@ -23,6 +23,6 @@ it('refuses member removal for non-owner', function (): void {
     $team->users()->attach($member->id, ['role' => 'member']);
 
     $this->actingAs($member)
-        ->delete("/teams/{$team->id}/members/{$member->id}")
+        ->delete(sprintf('/teams/%d/members/%s', $team->id, $member->id))
         ->assertForbidden();
 });

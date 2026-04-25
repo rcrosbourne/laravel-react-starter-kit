@@ -34,7 +34,7 @@ final class TeamController extends Controller
         $this->authorize('update', $team);
 
         /** @var array{name: string} $validated */
-        $validated = $request->validate(['name' => 'required|string|max:255']);
+        $validated = $request->validate(['name' => ['required', 'string', 'max:255']]);
 
         $team->update($validated);
 
@@ -47,7 +47,7 @@ final class TeamController extends Controller
 
         $team->delete();
 
-        return redirect()->route('dashboard');
+        return to_route('dashboard');
     }
 
     public function switch(Request $request, Team $team): RedirectResponse

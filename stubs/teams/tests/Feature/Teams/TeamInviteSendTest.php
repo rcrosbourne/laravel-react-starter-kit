@@ -14,7 +14,7 @@ it('sends an invitation email to a new address', function (): void {
     $owner = User::factory()->create();
     $team = Team::query()->create(['name' => 'Team', 'owner_id' => $owner->id]);
 
-    $this->actingAs($owner)->post("/teams/{$team->id}/invitations", [
+    $this->actingAs($owner)->post(sprintf('/teams/%d/invitations', $team->id), [
         'email' => 'new@example.com',
         'role' => 'member',
     ]);
@@ -29,6 +29,6 @@ it('refuses invitation send for non-owner', function (): void {
     $team = Team::query()->create(['name' => 'Team', 'owner_id' => $owner->id]);
 
     $this->actingAs($stranger)
-        ->post("/teams/{$team->id}/invitations", ['email' => 'x@example.com', 'role' => 'member'])
+        ->post(sprintf('/teams/%d/invitations', $team->id), ['email' => 'x@example.com', 'role' => 'member'])
         ->assertForbidden();
 });
