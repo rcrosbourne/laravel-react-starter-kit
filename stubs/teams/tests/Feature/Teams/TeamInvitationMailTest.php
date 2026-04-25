@@ -24,16 +24,11 @@ it('builds the envelope and content for an invitation mail', function (): void {
 });
 
 it('falls back when the invitation team is missing', function (): void {
-    $owner = User::factory()->create();
-    $team = Team::query()->create(['name' => 'Initech', 'owner_id' => $owner->id]);
-    $invitation = TeamInvitation::query()->create([
-        'team_id' => $team->id,
+    $invitation = new TeamInvitation([
+        'team_id' => 9_999_999,
         'email' => 'invitee@example.com',
         'role' => 'member',
     ]);
-
-    $team->delete();
-    $invitation->refresh();
 
     $mail = new TeamInvitationMail($invitation, 'https://example.test/accept');
 
