@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Setup\EnvMutator;
+use App\Setup\ShellRunner;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Str;
 
 use function Laravel\Prompts\confirm;
 
@@ -19,7 +20,7 @@ final class AppSetupCommand extends Command
 
     protected $description = 'Configure a fresh clone of the starter kit (env, optional teams, build, migrate)';
 
-    public function handle(Filesystem $files): int
+    public function handle(Filesystem $files, ShellRunner $shell): int
     {
         $stubsPath = base_path('stubs');
 
@@ -41,14 +42,19 @@ final class AppSetupCommand extends Command
             $files->deleteDirectory($stubsPath);
         }
 
-        $this->runShell('php artisan boost:install --no-interaction');
-        $this->runShell('bun install');
-        $this->runShell('bun run build');
-        $this->runShell('php artisan migrate --graceful');
+        $this->runShell($shell, 'php artisan boost:install --no-interaction');
+        $this->runShell($shell, 'bun install');
+        $this->runShell($shell, 'bun run build');
+        $this->runShell($shell, 'php artisan migrate --graceful');
 
         $this->printNextSteps($teams);
 
         return self::SUCCESS;
+    }
+
+    private function runShell(ShellRunner $shell, string $command): void
+    {
+        $this->components->task($command, fn (): bool => $shell->run($command));
     }
 
     private function resolveTeamsChoice(): bool
@@ -76,33 +82,14 @@ final class AppSetupCommand extends Command
         }
 
         $project = basename(base_path());
-
-        $appName = Str::of($project)->replace(['-', '_'], ' ')->title()->toString();
-        $dbName = Str::of($project)->replace('-', '_')->snake()->lower()->toString();
-        $appUrl = sprintf('http://%s.test', $project);
-
         $contents = $files->get($envPath);
 
-        $contents = (string) preg_replace('/^APP_NAME=.*/m', sprintf('APP_NAME="%s"', $appName), $contents);
-        $contents = (string) preg_replace('/^APP_URL=.*/m', 'APP_URL='.$appUrl, $contents);
-        $contents = (string) preg_replace('/^DB_DATABASE=.*/m', 'DB_DATABASE='.$dbName, $contents);
-
-        $files->put($envPath, $contents);
+        $files->put($envPath, EnvMutator::mutate($contents, $project));
     }
 
     private function copyTeamsStubs(): void
     {
         // Implemented in Phase 8.
-    }
-
-    private function runShell(string $command): void
-    {
-        $this->components->task($command, function () use ($command): bool {
-            $exitCode = 0;
-            passthru($command, $exitCode);
-
-            return $exitCode === 0;
-        });
     }
 
     private function printNextSteps(bool $teams): void
