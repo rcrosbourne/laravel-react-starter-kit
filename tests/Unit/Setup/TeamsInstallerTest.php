@@ -73,7 +73,7 @@ final class TeamsInstallerTest extends TestCase
             PHP,
         );
 
-        (new TeamsInstaller($this->files, $this->base))->install($this->stubs);
+        new TeamsInstaller($this->files, $this->base)->install($this->stubs);
 
         $this->assertFileExists($this->base.'/app/Models/Team.php');
         $this->assertSame(
@@ -99,7 +99,7 @@ final class TeamsInstallerTest extends TestCase
     {
         $missing = $this->base.'/missing-stubs';
 
-        (new TeamsInstaller($this->files, $this->base))->install($missing);
+        new TeamsInstaller($this->files, $this->base)->install($missing);
 
         $this->assertDirectoryDoesNotExist($missing);
         $this->assertSame([], $this->files->files($this->base));
@@ -113,7 +113,7 @@ final class TeamsInstallerTest extends TestCase
             "<?php\n\nuse Foo\\Bar;\n\nRoute::get('/x', [Bar::class, 'x']);\n",
         );
 
-        (new TeamsInstaller($this->files, $this->base))->install($this->stubs);
+        new TeamsInstaller($this->files, $this->base)->install($this->stubs);
 
         // web.teams.php was copied but web.php was never present, so splice early-returns
         // and web.teams.php remains.
@@ -152,7 +152,7 @@ final class TeamsInstallerTest extends TestCase
             PHP,
         );
 
-        (new TeamsInstaller($this->files, $this->base))->install($this->stubs);
+        new TeamsInstaller($this->files, $this->base)->install($this->stubs);
 
         $web = $this->files->get($this->base.'/routes/web.php');
 
@@ -181,7 +181,7 @@ final class TeamsInstallerTest extends TestCase
             "<?php\n\nuse Illuminate\\Support\\Facades\\Route;\n\nRoute::get('/', fn () => 'home');\n",
         );
 
-        (new TeamsInstaller($this->files, $this->base))->install($this->stubs);
+        new TeamsInstaller($this->files, $this->base)->install($this->stubs);
 
         $web = $this->files->get($this->base.'/routes/web.php');
         $this->assertStringContainsString('// Teams routes', $web);

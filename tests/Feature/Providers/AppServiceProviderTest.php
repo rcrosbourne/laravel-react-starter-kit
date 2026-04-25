@@ -43,7 +43,7 @@ final class AppServiceProviderTest extends TestCase
             $this->assertTrue($this->app->isProduction());
 
             // Re-run the provider's boot() so the new closure picks up the changed env.
-            (new AppServiceProvider($this->app))->boot();
+            new AppServiceProvider($this->app)->boot();
 
             $rule = Password::default();
             $this->assertInstanceOf(Password::class, $rule);
@@ -55,7 +55,7 @@ final class AppServiceProviderTest extends TestCase
             $this->assertTrue((fn () => $this->uncompromised)->call($rule));
         } finally {
             $this->app->detectEnvironment(static fn () => $original);
-            (new AppServiceProvider($this->app))->boot();
+            new AppServiceProvider($this->app)->boot();
         }
     }
 }

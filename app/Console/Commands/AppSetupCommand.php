@@ -90,7 +90,7 @@ final class AppSetupCommand extends Command
 
     private function copyTeamsStubs(Filesystem $files): void
     {
-        (new TeamsInstaller($files, base_path()))->install(base_path('stubs/teams'));
+        new TeamsInstaller($files, base_path())->install(base_path('stubs/teams'));
     }
 
     private function printNextSteps(bool $teams): void
