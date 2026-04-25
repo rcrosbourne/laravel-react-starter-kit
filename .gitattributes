@@ -1,3 +1,4 @@
+# Auto detect text files and perform LF normalization
 * text=auto eol=lf
 
 *.blade.php diff=html
@@ -6,6 +7,16 @@
 *.md diff=markdown
 *.php diff=php
 
-CHANGELOG.md export-ignore
-README.md export-ignore
-.github/workflows/browser-tests.yml export-ignore
+/.editorconfig          export-ignore
+/.gitattributes         export-ignore
+/.github                export-ignore
+/.gitignore             export-ignore
+/.npmrc                 export-ignore
+/.prettierignore        export-ignore
+/.prettierrc            export-ignore
+/CHANGELOG.md           export-ignore
+/docs                   export-ignore
+/README.md              export-ignore
+/phpstan.neon           export-ignore
+/pint.json              export-ignore
+/rector.php             export-ignore
