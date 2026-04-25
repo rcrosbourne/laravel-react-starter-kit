@@ -65,24 +65,32 @@ final readonly class TeamsInstaller
         preg_match_all('/^use\s+([^;]+);\s*$/m', $webContent, $existingUseMatches);
 
         $existingUses = array_map(mb_trim(...), $existingUseMatches[1]);
+        $teamsUses = array_map(mb_trim(...), $teamsUseMatches[1]);
         $newUses = array_values(array_filter(
-            array_map(mb_trim(...), $teamsUseMatches[1]),
+            $teamsUses,
             fn (string $fqcn): bool => ! in_array($fqcn, $existingUses, true),
-        ));
-
-        $useSnippet = implode("\n", array_map(
-            fn (string $fqcn): string => sprintf('use %s;', $fqcn),
-            $newUses,
         ));
 
         $teamsRoutes = (string) preg_replace('/^<\?php\s*/', '', $teamsContent);
         $teamsRoutes = (string) preg_replace('/^declare\(strict_types=1\);\s*/m', '', $teamsRoutes);
         $teamsRoutes = (string) preg_replace('/^use\s+[^;]+;\s*$/m', '', $teamsRoutes);
 
-        if ($useSnippet !== '') {
+        if ($newUses !== []) {
+            // Merge the new FQCNs into the existing block, sort alphabetically,
+            // and rewrite the entire `use` block in one shot — this matches what
+            // pint's `ordered_imports` fixer expects so we don't leave a stray
+            // second import group beneath the first.
+            $mergedUses = array_values(array_unique([...$existingUses, ...$newUses]));
+            sort($mergedUses, SORT_STRING);
+
+            $renderedBlock = implode("\n", array_map(
+                fn (string $fqcn): string => sprintf('use %s;', $fqcn),
+                $mergedUses,
+            ));
+
             $webContent = (string) preg_replace(
-                '/((?:^use\s+[^;]+;\s*$\n?)+)/m',
-                sprintf('$1%s%s', $useSnippet, PHP_EOL),
+                '/(?:^use\s+[^;]+;\s*$\n?)+/m',
+                $renderedBlock."\n",
                 $webContent,
                 1,
             );

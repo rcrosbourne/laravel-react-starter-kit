@@ -60,19 +60,18 @@ final class HandleInertiaRequests extends Middleware
             return null;
         }
 
+        /** @var array<string, mixed> $attributes */
         $attributes = $user->toArray();
-        $currentTeamId = $user->getAttributes()['current_team_id'] ?? null;
 
-        return [
-            ...$attributes,
-            'current_team_id' => $currentTeamId,
-            'all_teams' => $user->allTeams()
-                ->map(fn (Team $team): array => [
-                    'id' => $team->id,
-                    'name' => $team->name,
-                ])
-                ->values()
-                ->all(),
-        ];
+        $attributes['current_team_id'] = $user->getAttributes()['current_team_id'] ?? null;
+        $attributes['all_teams'] = $user->allTeams()
+            ->map(fn (Team $team): array => [
+                'id' => $team->id,
+                'name' => $team->name,
+            ])
+            ->values()
+            ->all();
+
+        return $attributes;
     }
 }

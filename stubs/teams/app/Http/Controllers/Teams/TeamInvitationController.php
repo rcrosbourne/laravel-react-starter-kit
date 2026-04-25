@@ -46,7 +46,7 @@ final class TeamInvitationController extends Controller
 
     public function accept(Request $request, TeamInvitation $invitation): RedirectResponse
     {
-        abort_unless($request->hasValidSignature(), 403);
+        abort_unless((bool) $request->hasValidSignature(), 403);
 
         $team = $invitation->team;
         abort_if($team === null, 404);

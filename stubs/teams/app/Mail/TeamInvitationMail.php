@@ -20,11 +20,8 @@ final class TeamInvitationMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $team = $this->invitation->team;
-        $teamName = $team?->name ?? 'a team';
-
         return new Envelope(
-            subject: "You're invited to join {$teamName}",
+            subject: "You're invited to join {$this->invitation->team->name}",
         );
     }
 
