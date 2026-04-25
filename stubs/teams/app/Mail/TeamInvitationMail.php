@@ -23,7 +23,7 @@ final class TeamInvitationMail extends Mailable
         $teamName = $this->invitation->team->name ?? 'a team';
 
         return new Envelope(
-            subject: 'You\'re invited to join '.$teamName,
+            subject: "You're invited to join ".$teamName,
         );
     }
 
