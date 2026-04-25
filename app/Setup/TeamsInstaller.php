@@ -61,8 +61,8 @@ final readonly class TeamsInstaller
         // we can splice only NEW imports into web.php and avoid duplicate-use
         // PHP fatal errors when the teams fragment already shares an import
         // (e.g. Illuminate\Support\Facades\Route).
-        preg_match_all('/^use\s+([^;]+);\s*$/m', $teamsContent, $teamsUseMatches);
-        preg_match_all('/^use\s+([^;]+);\s*$/m', $webContent, $existingUseMatches);
+        preg_match_all('/^use\s+([^;]+);[\t ]*$/m', $teamsContent, $teamsUseMatches);
+        preg_match_all('/^use\s+([^;]+);[\t ]*$/m', $webContent, $existingUseMatches);
 
         $existingUses = array_map(mb_trim(...), $existingUseMatches[1]);
         $teamsUses = array_map(mb_trim(...), $teamsUseMatches[1]);
@@ -71,9 +71,9 @@ final readonly class TeamsInstaller
             fn (string $fqcn): bool => ! in_array($fqcn, $existingUses, true),
         ));
 
-        $teamsRoutes = (string) preg_replace('/^<\?php\s*/', '', $teamsContent);
-        $teamsRoutes = (string) preg_replace('/^declare\(strict_types=1\);\s*/m', '', $teamsRoutes);
-        $teamsRoutes = (string) preg_replace('/^use\s+[^;]+;\s*$/m', '', $teamsRoutes);
+        $teamsRoutes = (string) preg_replace('/^<\?php[\t ]*\n?/', '', $teamsContent);
+        $teamsRoutes = (string) preg_replace('/^declare\(strict_types=1\);[\t ]*\n?/m', '', $teamsRoutes);
+        $teamsRoutes = (string) preg_replace('/^use\s+[^;]+;[\t ]*\n?/m', '', $teamsRoutes);
 
         if ($newUses !== []) {
             // Merge the new FQCNs into the existing block, sort alphabetically,
@@ -89,7 +89,7 @@ final readonly class TeamsInstaller
             ));
 
             $webContent = (string) preg_replace(
-                '/(?:^use\s+[^;]+;\s*$\n?)+/m',
+                '/(?:^use\s+[^;]+;[\t ]*\n?)+/m',
                 $renderedBlock."\n",
                 $webContent,
                 1,
