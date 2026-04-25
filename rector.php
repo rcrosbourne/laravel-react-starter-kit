@@ -47,6 +47,7 @@ return RectorConfig::configure()
         AddOverrideAttributeToOverriddenMethodsRector::class,
         MakeInheritedMethodVisibilitySameAsParentRector::class,
         AddOverrideAttributeToOverriddenPropertiesRector::class,
+        __DIR__.'/tests/bootstrap.php',
     ])
     ->withPreparedSets(
         deadCode: true,
