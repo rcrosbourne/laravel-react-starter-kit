@@ -43,7 +43,7 @@ final class SecurityController extends Controller implements HasMiddleware
             $request->ensureStateIsValid();
 
             $user = $request->user();
-            assert($user instanceof User);
+            abort_unless($user instanceof User, 403);
 
             $props['twoFactorEnabled'] = $user->hasEnabledTwoFactorAuthentication();
             $props['requiresConfirmation'] = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
@@ -58,7 +58,7 @@ final class SecurityController extends Controller implements HasMiddleware
     public function update(PasswordUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        assert($user instanceof User);
+        abort_unless($user instanceof User, 403);
 
         $user->update([
             'password' => $request->string('password')->toString(),

@@ -14,7 +14,6 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 use function abort_unless;
-use function assert;
 
 final class TeamController extends Controller
 {
@@ -54,8 +53,7 @@ final class TeamController extends Controller
     {
         $user = $request->user();
 
-        assert($user instanceof User);
-
+        abort_unless($user instanceof User, 403);
         abort_unless($user->switchTeam($team), 403);
 
         return back();

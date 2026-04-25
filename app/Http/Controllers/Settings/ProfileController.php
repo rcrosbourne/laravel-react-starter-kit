@@ -33,7 +33,7 @@ final class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        assert($user instanceof User);
+        abort_unless($user instanceof User, 403);
 
         $user->fill($request->validated());
 
@@ -54,7 +54,7 @@ final class ProfileController extends Controller
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
         $user = $request->user();
-        assert($user instanceof User);
+        abort_unless($user instanceof User, 403);
 
         Auth::logout();
 
