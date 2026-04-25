@@ -26,7 +26,10 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.9.3",
         "nunomaduro/pao": "^1.0.3",
-        "phpunit/phpunit": "^12.5.23",
+        "pestphp/pest": "^5.0",
+        "pestphp/pest-plugin-browser": "^5.0",
+        "pestphp/pest-plugin-type-coverage": "^5.0",
+        "phpunit/phpunit": "^13.1.7",
         "rector/rector": "^2.4"
     },
     "autoload": {
@@ -105,5 +108,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
