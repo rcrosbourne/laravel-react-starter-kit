@@ -20,7 +20,7 @@ final class TeamsInstallerTest extends TestCase
     {
         parent::setUp();
 
-        $this->files = new Filesystem();
+        $this->files = new Filesystem;
         $this->base = sys_get_temp_dir().'/teams-installer-'.uniqid();
         $this->stubs = $this->base.'/stubs/teams';
 

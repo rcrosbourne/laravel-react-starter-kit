@@ -14,7 +14,7 @@ final class ShellRunnerTest extends TestCase
         ob_start();
 
         try {
-            $this->assertTrue((new PassthruShellRunner())->run('true'));
+            $this->assertTrue((new PassthruShellRunner)->run('true'));
         } finally {
             ob_end_clean();
         }
@@ -25,7 +25,7 @@ final class ShellRunnerTest extends TestCase
         ob_start();
 
         try {
-            $this->assertFalse((new PassthruShellRunner())->run('false'));
+            $this->assertFalse((new PassthruShellRunner)->run('false'));
         } finally {
             ob_end_clean();
         }
